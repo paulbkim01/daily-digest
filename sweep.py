@@ -431,9 +431,13 @@ def cmd_format(args):
 def cmd_save(args):
     digests_dir = Path(args.digests_dir)
     digests_dir.mkdir(parents=True, exist_ok=True)
-    date_str = args.date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    filepath = next_filename(digests_dir, date_str)
     content = sys.stdin.read()
+    # Priority: explicit --date > date from markdown header > UTC now
+    date_str = args.date
+    if not date_str:
+        m = re.search(r"^# Research Digest\s*[—–-]\s*(\d{4}-\d{2}-\d{2})", content, re.MULTILINE)
+        date_str = m.group(1) if m else datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    filepath = next_filename(digests_dir, date_str)
     filepath.write_text(content, encoding="utf-8")
     json.dump({"path": str(filepath)}, sys.stdout, indent=2)
 
