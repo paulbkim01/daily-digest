@@ -1,0 +1,20 @@
+[
+  {"query": "run a full research sweep across all my sources, I want a digest by end of day", "should_trigger": true},
+  {"query": "whats new in AI this week? do the whole scan and give me a report", "should_trigger": true},
+  {"query": "I haven't checked sources in a while — can you do a comprehensive scan of all tiers and score everything?", "should_trigger": true},
+  {"query": "time for the weekly digest. hit all the blogs, papers, youtube channels, everything in the registry", "should_trigger": true},
+  {"query": "run the pipeline end to end — scanners, scoring, dedup, save to digests/", "should_trigger": true},
+  {"query": "scan all sources and produce a markdown digest with state of the world and action items", "should_trigger": true},
+  {"query": "I need to catch up on what happened in AI/ML the past week. do a full sweep of all 8 tiers and write it up", "should_trigger": true},
+  {"query": "kick off the research sweep, fan out all 5 scanners in parallel", "should_trigger": true},
+  {"query": "can you just check the anthropic blog real quick? I think they released something", "should_trigger": false},
+  {"query": "score this article for me: https://blog.cloudflare.com/some-post", "should_trigger": false},
+  {"query": "format these scored items into a digest — here's the JSON", "should_trigger": false},
+  {"query": "set up the pipeline, install playwright and check dependencies", "should_trigger": false},
+  {"query": "what's the weather like today in SF?", "should_trigger": false},
+  {"query": "help me write a python script that scrapes hacker news", "should_trigger": false},
+  {"query": "can you scan just the MLOps tier? I only care about ML infrastructure stuff right now", "should_trigger": false},
+  {"query": "I want to add a new source to the registry — where do I edit that?", "should_trigger": false},
+  {"query": "read sweep.py and explain how the scoring math works", "should_trigger": false},
+  {"query": "check if there are any new papers on arxiv about LLM agents", "should_trigger": false}
+]

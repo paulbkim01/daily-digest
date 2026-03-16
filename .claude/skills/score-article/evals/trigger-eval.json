@@ -1,0 +1,20 @@
+[
+  {"query": "score this for me: https://blog.cloudflare.com/rfc-9457-agent-error-pages/", "should_trigger": true},
+  {"query": "is this paper worth reading? https://arxiv.org/abs/2501.12948", "should_trigger": true},
+  {"query": "rate this article — https://simonwillison.net/2026/Feb/23/agentic-engineering-patterns/", "should_trigger": true},
+  {"query": "someone sent me this link, should I bother reading it? https://blog.langchain.dev/some-post", "should_trigger": true},
+  {"query": "evaluate this against the rubric: https://www.anthropic.com/news/claude-opus-4-6", "should_trigger": true},
+  {"query": "https://wandb.ai/fully-connected/blog/some-article — is this any good?", "should_trigger": true},
+  {"query": "what do you think of this post? give me the RQNAS scores https://hamel.dev/blog/some-post", "should_trigger": true},
+  {"query": "I found this youtube video about AI agents, worth my time? https://youtube.com/watch?v=abc123", "should_trigger": true},
+  {"query": "run a full sweep across all sources and make a digest", "should_trigger": false},
+  {"query": "scan the AI labs tier for new content", "should_trigger": false},
+  {"query": "format these scored items into a digest", "should_trigger": false},
+  {"query": "help me fix a bug in sweep.py", "should_trigger": false},
+  {"query": "what are the scoring weights in the rubric?", "should_trigger": false},
+  {"query": "install the pipeline dependencies", "should_trigger": false},
+  {"query": "write a blog post about AI coding agents", "should_trigger": false},
+  {"query": "can you summarize what this codebase does?", "should_trigger": false},
+  {"query": "search hacker news for posts about prompt injection", "should_trigger": false},
+  {"query": "compare Claude vs GPT for coding tasks", "should_trigger": false}
+]

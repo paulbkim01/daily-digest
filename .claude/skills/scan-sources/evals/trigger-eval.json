@@ -1,0 +1,20 @@
+[
+  {"query": "scan the AI labs tier — just want to see what Anthropic and OpenAI published recently", "should_trigger": true},
+  {"query": "check engineering blogs for anything about AI infrastructure or agent patterns", "should_trigger": true},
+  {"query": "any new MLOps content? check the mlops sources", "should_trigger": true},
+  {"query": "look at what's trending on hacker news and reddit for AI stuff", "should_trigger": true},
+  {"query": "scan youtube and podcasts for new AI content this month", "should_trigger": true},
+  {"query": "check the research papers tier — any interesting arxiv papers?", "should_trigger": true},
+  {"query": "I only care about tooling right now — scan cursor, windsurf, vercel, github blogs", "should_trigger": true},
+  {"query": "quick scan of individual bloggers — simon willison, karpathy, chip huyen etc", "should_trigger": true},
+  {"query": "what's new from notable AI individuals? check tier 6", "should_trigger": true},
+  {"query": "run a full sweep across ALL tiers with scoring and digest generation", "should_trigger": false},
+  {"query": "score this article: https://some-url.com/post", "should_trigger": false},
+  {"query": "format these items into a digest", "should_trigger": false},
+  {"query": "set up the pipeline and install dependencies", "should_trigger": false},
+  {"query": "help me write a web scraper in python", "should_trigger": false},
+  {"query": "what's the difference between tier 3 and tier 3b in the registry?", "should_trigger": false},
+  {"query": "add a new source to the registry: modal.com/blog", "should_trigger": false},
+  {"query": "how does the dedup logic in sweep.py work?", "should_trigger": false},
+  {"query": "find me recent blog posts about kubernetes", "should_trigger": false}
+]
