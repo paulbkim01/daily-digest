@@ -13,6 +13,7 @@ Subcommands:
     save     Write markdown to file with collision detection
     coverage Merge scanner coverage manifests into summary report
     pipeline Chain: score → dedup → format → save
+    repair   Extract and fix malformed JSON from scanner output
 """
 from __future__ import annotations
 
@@ -51,6 +52,119 @@ URL_RE = re.compile(r"https?://[^\s)\]>\"]+")
 # not the caller's working directory.
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEFAULT_DIGESTS_DIR = str(PROJECT_ROOT / "digests")
+
+
+# ── JSON repair ─────────────────────────────────────────────────────────────
+
+def repair_json(text: str) -> object:
+    """Extract and repair malformed JSON from scanner output.
+
+    Handles:
+    - Unescaped double quotes inside string values (e.g., titles with "scare quotes")
+    - Truncated output (extracts complete items before the cutoff)
+    - JSON embedded in surrounding prose text
+    - Plain arrays or {"items": [...]} envelopes
+
+    Returns the parsed Python object (list or dict).
+    """
+    # 1. Find the JSON start — look for envelope or array
+    envelope_start = text.find('{"items"')
+    array_start = text.find('[{')
+    if envelope_start >= 0 and (array_start < 0 or envelope_start <= array_start):
+        start = envelope_start
+    elif array_start >= 0:
+        start = array_start
+    else:
+        # Last resort: first { or [
+        brace = text.find('{')
+        bracket = text.find('[')
+        if brace < 0 and bracket < 0:
+            raise ValueError("No JSON found in input")
+        start = min(p for p in (brace, bracket) if p >= 0)
+
+    raw = text[start:]
+
+    # 2. Handle truncation — cut before the truncation marker
+    for marker in ('... [TRUNCATED', '...[TRUNCATED', '…[TRUNCATED', '… [TRUNCATED'):
+        trunc = raw.find(marker)
+        if trunc >= 0:
+            raw = raw[:trunc]
+            # Trim back to last complete object
+            last_brace = raw.rfind('}')
+            if last_brace >= 0:
+                raw = raw[:last_brace + 1]
+            # Close any open array/envelope
+            if text[start] == '{' and '["items"' not in raw[:20] or raw.lstrip().startswith('{"items"'):
+                raw = raw + ']}'
+            else:
+                raw = raw + ']'
+            break
+
+    # 3. Try parsing as-is first (fast path)
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        pass
+
+    # 4. State-machine repair: fix unescaped quotes inside string values.
+    #    A quote ends a string only if the next non-whitespace char is a JSON
+    #    structural character (:, ,, }, ]). Otherwise, escape it.
+    structural = set(':,}]')
+    result = []
+    i = 0
+    in_string = False
+
+    while i < len(raw):
+        c = raw[i]
+
+        if not in_string:
+            result.append(c)
+            if c == '"':
+                in_string = True
+            i += 1
+        else:
+            if c == '\\':
+                # Escaped char — pass through both
+                result.append(c)
+                if i + 1 < len(raw):
+                    result.append(raw[i + 1])
+                    i += 2
+                else:
+                    i += 1
+            elif c == '"':
+                # Is this the real end of the string?
+                j = i + 1
+                while j < len(raw) and raw[j] in ' \t\n\r':
+                    j += 1
+                if j >= len(raw) or raw[j] in structural:
+                    # Real closing quote
+                    result.append(c)
+                    in_string = False
+                else:
+                    # Interior quote — escape it
+                    result.append('\\"')
+                i += 1
+            else:
+                result.append(c)
+                i += 1
+
+    fixed = ''.join(result)
+
+    try:
+        return json.loads(fixed)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"JSON repair failed at char {e.pos}: {e.msg}") from e
+
+
+def load_json_stdin() -> object:
+    """Read JSON from stdin with automatic repair for malformed scanner output."""
+    raw = sys.stdin.read()
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        repaired = repair_json(raw)
+        sys.stderr.write("repair: fixed malformed JSON from stdin\n")
+        return repaired
 
 
 # ── Core functions ───────────────────────────────────────────────────────────
@@ -255,7 +369,7 @@ def cmd_seen(args):
 
 
 def cmd_score(args):
-    items = json.load(sys.stdin)
+    items = load_json_stdin()
     for it in items:
         scores = it.get("scores", {})
         w = calc_weighted(scores)
@@ -265,7 +379,7 @@ def cmd_score(args):
 
 
 def cmd_dedup(args):
-    items = json.load(sys.stdin)
+    items = load_json_stdin()
     seen = set()
     if args.seen_file:
         with open(args.seen_file) as f:
@@ -278,7 +392,7 @@ def cmd_dedup(args):
 
 
 def cmd_batch(args):
-    items = json.load(sys.stdin)
+    items = load_json_stdin()
     batches = split_batches(items)
     json.dump(batches, sys.stdout, indent=2)
 
@@ -291,7 +405,7 @@ def _load_coverage(path: str | None) -> dict | None:
 
 
 def cmd_format(args):
-    data = json.load(sys.stdin)
+    data = load_json_stdin()
     # Accept either a plain list or {"items": [...], "meta": {...}}
     if isinstance(data, list):
         items = data
@@ -326,7 +440,7 @@ def cmd_save(args):
 
 def cmd_pipeline(args):
     """Chain: score → dedup → format → save."""
-    items = json.load(sys.stdin)
+    items = load_json_stdin()
 
     # Score
     for it in items:
@@ -366,9 +480,42 @@ def cmd_pipeline(args):
     sys.stderr.write("\n")
 
 
+def cmd_repair(args):
+    """Extract and repair malformed JSON from stdin."""
+    raw = sys.stdin.read()
+    data = repair_json(raw)
+
+    # Normalize: always extract items array for reporting
+    if isinstance(data, dict):
+        items = data.get("items", [])
+    elif isinstance(data, list):
+        items = data
+    else:
+        items = []
+
+    dropped = 0
+    if args.strict:
+        # Drop items missing required fields
+        required = {"title", "url", "source_tier", "source_name"}
+        clean = [it for it in items if required.issubset(it.keys())]
+        dropped = len(items) - len(clean)
+        if isinstance(data, dict):
+            data["items"] = clean
+        else:
+            data = clean
+
+    json.dump(data, sys.stdout, indent=2, ensure_ascii=False)
+    # Stats on stderr so they don't pollute the JSON output
+    count = len(items) - dropped
+    sys.stderr.write(f"repair: {count} items extracted")
+    if dropped:
+        sys.stderr.write(f", {dropped} dropped (missing fields)")
+    sys.stderr.write("\n")
+
+
 def cmd_coverage(args):
     """Merge scanner coverage manifests into a summary report."""
-    manifests = json.load(sys.stdin)
+    manifests = load_json_stdin()
     if not isinstance(manifests, list):
         manifests = [manifests]
 
@@ -454,6 +601,11 @@ def main():
     p.add_argument("--digests-dir", default=DEFAULT_DIGESTS_DIR)
     p.add_argument("--date", help="Digest date (YYYY-MM-DD)")
     p.set_defaults(func=cmd_save)
+
+    # repair
+    p = sub.add_parser("repair", help="Extract and fix malformed JSON from scanner output (stdin: text)")
+    p.add_argument("--strict", action="store_true", help="Drop items missing required fields")
+    p.set_defaults(func=cmd_repair)
 
     # coverage
     p = sub.add_parser("coverage", help="Merge scanner coverage manifests (stdin: JSON)")
