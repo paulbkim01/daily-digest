@@ -183,6 +183,12 @@ echo '$JSON' | python3 sweep.py format --date 2026-03-16 --scanned 200
 # 마크다운을 파일로 저장 (충돌 감지 포함)
 echo '$MARKDOWN' | python3 sweep.py save --digests-dir digests/
 
+# 스캐너 커버리지 매니페스트를 요약 리포트로 병합
+echo '$ENVELOPES' | python3 sweep.py coverage --output /tmp/coverage.json
+
+# 스캐너 출력에서 깨진 JSON 추출 및 복구 (이스케이프 안 된 따옴표, 잘림 처리)
+echo '$RAW_TEXT' | python3 sweep.py repair
+
 # 전체 파이프라인: score + dedup + format + save 한 번에 실행
 echo '$JSON' | python3 sweep.py pipeline --digests-dir digests/ --scanned 200
 ```

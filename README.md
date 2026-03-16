@@ -184,6 +184,12 @@ echo '$JSON' | python3 sweep.py format --date 2026-03-16 --scanned 200
 # Save markdown to file with collision detection
 echo '$MARKDOWN' | python3 sweep.py save --digests-dir digests/
 
+# Merge scanner coverage manifests into a summary report
+echo '$ENVELOPES' | python3 sweep.py coverage --output /tmp/coverage.json
+
+# Extract and fix malformed JSON from scanner output (handles unescaped quotes, truncation)
+echo '$RAW_TEXT' | python3 sweep.py repair
+
 # Full pipeline: score + dedup + format + save in one step
 echo '$JSON' | python3 sweep.py pipeline --digests-dir digests/ --scanned 200
 ```

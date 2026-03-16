@@ -8,7 +8,7 @@ First time? Ask Claude to "install the pipeline" or run `bash setup.sh`.
 
 ## Architecture
 
-- `sweep.py` — deterministic pipeline (scoring math, dedup, formatting, coverage, file I/O)
+- `sweep.py` — deterministic pipeline (scoring math, dedup, formatting, coverage, JSON repair, file I/O)
 - `feed_parser.py` — RSS/Atom feed fetcher (stdlib-only, no dependencies)
 - `feeds.json` — feed URL registry for all 94 sources (used by feed_parser.py)
 - `input.py` — interactive config (timeframe, max articles, timeout) → writes `/tmp/sweep-config.json`
