@@ -1,0 +1,24 @@
+{
+  "total_sources": 91,
+  "sources_visited": 89,
+  "coverage_pct": 97.8,
+  "by_status": {
+    "ok": 72,
+    "empty": 17,
+    "error": 2
+  },
+  "missed_sources": [
+    {
+      "name": "xAI",
+      "scanner": "S2-ai-labs-challengers",
+      "status": "error",
+      "error": null
+    },
+    {
+      "name": "Papers With Code",
+      "scanner": "S7-research-papers",
+      "status": "error",
+      "error": null
+    }
+  ]
+}
