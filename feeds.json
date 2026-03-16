@@ -631,6 +631,62 @@
       "tier": "7"
     },
     {
+      "slug": "dwarkesh-podcast",
+      "name": "Dwarkesh Podcast",
+      "site_url": "https://youtube.com/@DwarkeshPatel",
+      "feed_url": null,
+      "tier": "7"
+    },
+    {
+      "slug": "mlst",
+      "name": "Machine Learning Street Talk",
+      "site_url": "https://youtube.com/@MachineLearningStreetTalk",
+      "feed_url": null,
+      "tier": "7"
+    },
+    {
+      "slug": "cognitive-revolution",
+      "name": "Cognitive Revolution",
+      "site_url": "https://youtube.com/@CognitiveRevolutionPodcast",
+      "feed_url": null,
+      "tier": "7"
+    },
+    {
+      "slug": "thursdai",
+      "name": "ThursdAI",
+      "site_url": "https://sub.thursdai.news",
+      "feed_url": "https://sub.thursdai.news/feed",
+      "tier": "7"
+    },
+    {
+      "slug": "no-priors",
+      "name": "No Priors",
+      "site_url": "https://nopriors.ai",
+      "feed_url": "https://feeds.megaphone.fm/nopriors",
+      "tier": "7"
+    },
+    {
+      "slug": "gradient-dissent",
+      "name": "Gradient Dissent (W&B)",
+      "site_url": "https://wandb.ai/fully-connected/gradient-dissent",
+      "feed_url": "https://feeds.captivate.fm/gradient-dissent/",
+      "tier": "7"
+    },
+    {
+      "slug": "twiml-ai",
+      "name": "TWIML AI Podcast",
+      "site_url": "https://twimlai.com/podcast",
+      "feed_url": null,
+      "tier": "7"
+    },
+    {
+      "slug": "last-week-in-ai",
+      "name": "Last Week in AI",
+      "site_url": "https://lastweekinai.com",
+      "feed_url": null,
+      "tier": "7"
+    },
+    {
       "slug": "a16z-blog",
       "name": "a16z Blog",
       "site_url": "https://a16z.com/blog",
