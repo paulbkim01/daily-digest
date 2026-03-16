@@ -10,7 +10,8 @@ First time? Ask Claude to "install the pipeline" or run `bash setup.sh`.
 
 - `sweep.py` — deterministic pipeline (scoring math, dedup, formatting, coverage, JSON repair, file I/O)
 - `feed_parser.py` — RSS/Atom feed fetcher (stdlib-only, no dependencies)
-- `feeds.json` — feed URL registry for all 94 sources (used by feed_parser.py)
+- `transcriber.py` — audio/video transcription (captions download, yt-dlp audio extraction, OpenRouter API transcription)
+- `feeds.json` — feed URL registry for all 102 sources (used by feed_parser.py)
 - `input.py` — interactive config (timeframe, max articles, timeout) → writes `/tmp/sweep-config.json`
 - `research-sweep-prompt.md` — single source of truth for source registry and rubric prose (scoring math in sweep.py)
 - `.claude/skills/` — skills auto-discovered by Claude (pipeline stages, humanizer, playwright)
@@ -43,6 +44,19 @@ When scraping with Playwright, use headless mode and the Accept: text/markdown h
 cd .claude/skills/playwright-skill && PW_HEADER_NAME=Accept PW_HEADER_VALUE=text/markdown node run.js /tmp/scrape-script.js
 ```
 
+### Transcriber (audio/video)
+
+For Tier 7 (YouTube & Podcasts), use `transcriber.py` to get actual content for scoring:
+
+- **Captions first (free):** `python3 transcriber.py captions <url>` — uses YouTube auto-captions
+- **Audio fallback (paid):** `python3 transcriber.py pipeline <url>` — downloads audio, transcribes via OpenRouter
+- **Search YouTube:** `python3 transcriber.py search "query"` — find relevant videos
+- **Dependencies:** `yt-dlp` (pip), `ffmpeg` (brew), `OPENROUTER_API_KEY` (env var, only for paid transcription)
+
+Cost: ~$0.58/hour of audio via `openai/gpt-audio-mini`. YouTube captions are free.
+
+Full reference: `.claude/skills/transcribe-audio/SKILL.md`
+
 ### Korean translation (digest language)
 
 The pipeline supports Korean digest output. The language preference is stored in `.claude/lang.conf` (`en` or `ko`), set during `bash setup.sh`. When `ko` is selected:
@@ -70,6 +84,7 @@ Claude auto-discovers these skills from `.claude/skills/`. No slash commands nee
 | humanizer | "humanize this text", reviewing writing quality |
 | korean-translator | "translate to Korean", "Korean version" |
 | playwright-skill | browser automation, scraping JS-heavy pages |
+| transcribe-audio | "transcribe this video", "get the transcript", YouTube/podcast URL |
 
 ## Writing Style
 
