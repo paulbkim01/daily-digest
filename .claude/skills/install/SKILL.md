@@ -52,6 +52,16 @@ brew install node
 brew install ripgrep
 ```
 
+**If yt-dlp is missing (needed for transcriber.py):**
+```bash
+uv tool install yt-dlp
+```
+
+**If ffmpeg is missing (needed for transcriber.py audio processing):**
+```bash
+brew install ffmpeg
+```
+
 **If Playwright skill needs installing:**
 ```bash
 cd .claude/skills/playwright-skill && npm run setup
@@ -94,12 +104,16 @@ Research Sweep Pipeline — Status
 ================================
 Python 3:    [version]
 Node.js:     [version]
+yt-dlp:      [version or MISSING]
+ffmpeg:      [version or MISSING]
 sweep.py:    [OK/FAIL]
 Playwright:  [OK/FAIL]
+Transcriber: [OK/FAIL]
 Humanizer:   [OK/FAIL]
 Sources:     [count] sources in registry
 Digests:     [count] existing digests
-Skills:      research-sweep, scan-sources, score-article, research-digest, install
+Skills:      research-sweep, scan-sources, score-article, research-digest,
+             transcribe-audio, install
 
 Ready to run: tell Claude "run a research sweep" or "scan AI labs"
 ```

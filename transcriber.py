@@ -2,7 +2,7 @@
 """transcriber.py — Audio/video transcription for the research sweep pipeline.
 
 Downloads YouTube captions or audio, transcribes via OpenRouter API, and
-outputs structured JSON for scoring.
+outputs structured JSON for scoring. Uses yt-dlp CLI (no Python import needed).
 
 Subcommands:
     captions   Download YouTube auto-captions (free, no API cost)
@@ -28,11 +28,6 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-try:
-    import yt_dlp
-except ImportError:
-    yt_dlp = None
-
 PROJECT_ROOT = Path(__file__).resolve().parent
 
 DEFAULT_MODEL = "openai/gpt-audio-mini"
@@ -49,8 +44,10 @@ AUDIO_FORMAT_MAP = {
 # ── Dependency checks ────────────────────────────────────────────────────────
 
 def _require_ytdlp():
-    if yt_dlp is None:
-        print("Error: yt-dlp not installed. Run: pip install yt-dlp", file=sys.stderr)
+    try:
+        subprocess.run(["yt-dlp", "--version"], capture_output=True, check=True)
+    except (FileNotFoundError, subprocess.CalledProcessError):
+        print("Error: yt-dlp not installed. Run: uv tool install yt-dlp", file=sys.stderr)
         sys.exit(1)
 
 
@@ -115,25 +112,33 @@ def _find_subtitle_file(directory: str) -> str | None:
     return None
 
 
-# ── Internal helpers ─────────────────────────────────────────────────────────
+# ── yt-dlp CLI wrappers ─────────────────────────────────────────────────────
+
+def _ytdlp_json(url: str, extra_args: list[str] | None = None) -> dict:
+    """Run yt-dlp with --dump-json and return parsed metadata."""
+    cmd = ["yt-dlp", "--no-warnings", "--dump-json", "--no-download"]
+    if extra_args:
+        cmd.extend(extra_args)
+    cmd.append(url)
+
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    return json.loads(result.stdout)
+
 
 def _get_captions(url: str) -> tuple[dict, str | None]:
-    """Try to get YouTube captions. Returns (metadata, transcript_text)."""
-    _require_ytdlp()
-
+    """Try to get YouTube captions via yt-dlp CLI. Returns (metadata, transcript_text)."""
     with tempfile.TemporaryDirectory() as tmpdir:
-        ydl_opts = {
-            "quiet": True,
-            "skip_download": True,
-            "writesubtitles": True,
-            "writeautomaticsub": True,
-            "subtitleslangs": ["en"],
-            "subtitlesformat": "vtt",
-            "outtmpl": {"default": os.path.join(tmpdir, "%(id)s.%(ext)s")},
-        }
-
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=True)
+        outtmpl = os.path.join(tmpdir, "%(id)s.%(ext)s")
+        cmd = [
+            "yt-dlp", "--no-warnings",
+            "--write-sub", "--write-auto-sub",
+            "--sub-lang", "en", "--sub-format", "vtt",
+            "--skip-download", "--print-json",
+            "-o", outtmpl,
+            url,
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+        info = json.loads(result.stdout)
 
         sub_file = _find_subtitle_file(tmpdir)
         transcript = parse_vtt(sub_file) if sub_file else None
@@ -149,23 +154,17 @@ def _get_captions(url: str) -> tuple[dict, str | None]:
 
 
 def _download_audio(url: str, output_dir: str) -> dict:
-    """Download audio from a URL via yt-dlp. Returns metadata with file path."""
-    _require_ytdlp()
-    _require_ffmpeg()
-
-    ydl_opts = {
-        "format": "bestaudio/best",
-        "outtmpl": {"default": os.path.join(output_dir, "%(id)s.%(ext)s")},
-        "postprocessors": [{
-            "key": "FFmpegExtractAudio",
-            "preferredcodec": "wav",
-        }],
-        "quiet": True,
-        "noplaylist": True,
-    }
-
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
+    """Download audio from a URL via yt-dlp CLI. Returns metadata with file path."""
+    outtmpl = os.path.join(output_dir, "%(id)s.%(ext)s")
+    cmd = [
+        "yt-dlp", "--no-warnings",
+        "-x", "--audio-format", "wav",
+        "--no-playlist", "--print-json",
+        "-o", outtmpl,
+        url,
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+    info = json.loads(result.stdout)
 
     video_id = info.get("id", "unknown")
     wav_path = os.path.join(output_dir, f"{video_id}.wav")
@@ -185,6 +184,34 @@ def _download_audio(url: str, output_dir: str) -> dict:
     }
 
 
+def _ytdlp_search(query: str, max_results: int = 10) -> list[dict]:
+    """Search YouTube via yt-dlp CLI. Returns list of video metadata."""
+    cmd = [
+        "yt-dlp", "--no-warnings",
+        "--dump-json", "--no-download",
+        "--flat-playlist",
+        f"ytsearch{max_results}:{query}",
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+
+    videos = []
+    for line in result.stdout.strip().split("\n"):
+        if line.strip():
+            entry = json.loads(line)
+            videos.append({
+                "title": entry.get("title"),
+                "url": entry.get("url") or entry.get("webpage_url"),
+                "author": entry.get("uploader") or entry.get("channel"),
+                "date": entry.get("upload_date"),
+                "duration": entry.get("duration"),
+                "views": entry.get("view_count"),
+                "description": (entry.get("description") or "")[:500],
+            })
+    return videos
+
+
+# ── Audio processing helpers ─────────────────────────────────────────────────
+
 def _normalize_audio(input_path: str, output_path: str) -> str:
     """Convert audio to mono 16kHz WAV for optimal speech recognition."""
     subprocess.run(
@@ -196,7 +223,6 @@ def _normalize_audio(input_path: str, output_path: str) -> str:
 
 def _chunk_audio(input_path: str, output_dir: str, segment_seconds: int = DEFAULT_SEGMENT_SECONDS) -> list[str]:
     """Split audio into fixed-length segments. Returns list of chunk paths."""
-    # Get duration via ffprobe
     probe = subprocess.run(
         ["ffprobe", "-v", "quiet", "-print_format", "json", "-show_format", input_path],
         capture_output=True, text=True,
@@ -268,6 +294,9 @@ def cmd_captions(args):
 
     try:
         meta, transcript = _get_captions(args.url)
+    except subprocess.CalledProcessError as e:
+        json.dump({"transcript": None, "method": "captions", "error": e.stderr or str(e)}, sys.stdout, indent=2)
+        return
     except Exception as e:
         json.dump({"transcript": None, "method": "captions", "error": str(e)}, sys.stdout, indent=2)
         return
@@ -280,6 +309,9 @@ def cmd_captions(args):
 
 def cmd_download(args):
     """Download audio from a URL via yt-dlp."""
+    _require_ytdlp()
+    _require_ffmpeg()
+
     output_dir = args.output_dir or DEFAULT_OUTPUT_DIR
     os.makedirs(output_dir, exist_ok=True)
 
@@ -322,25 +354,7 @@ def cmd_search(args):
     """Search YouTube for videos matching a query."""
     _require_ytdlp()
 
-    search_url = f"ytsearch{args.max_results}:{args.query}"
-    ydl_opts = {"quiet": True, "skip_download": True, "noplaylist": True}
-
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        results = ydl.extract_info(search_url, download=False)
-
-    videos = []
-    for entry in results.get("entries", []):
-        if entry:
-            videos.append({
-                "title": entry.get("title"),
-                "url": entry.get("webpage_url"),
-                "author": entry.get("uploader"),
-                "date": entry.get("upload_date"),
-                "duration": entry.get("duration"),
-                "views": entry.get("view_count"),
-                "description": (entry.get("description") or "")[:500],
-            })
-
+    videos = _ytdlp_search(args.query, args.max_results)
     json.dump(videos, sys.stdout, indent=2, ensure_ascii=False)
 
 
@@ -369,22 +383,18 @@ def cmd_pipeline(args):
         model = args.model or DEFAULT_MODEL
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            # Download
             print(f"Downloading audio from: {url}", file=sys.stderr)
             dl_meta = _download_audio(url, tmpdir)
             if meta is None:
                 meta = dl_meta
             wav_path = dl_meta["path"]
 
-            # Normalize
             norm_path = os.path.join(tmpdir, "normalized.wav")
             _normalize_audio(wav_path, norm_path)
 
-            # Chunk
             chunks = _chunk_audio(norm_path, tmpdir, DEFAULT_SEGMENT_SECONDS)
             print(f"Transcribing {len(chunks)} chunk(s) via {model}...", file=sys.stderr)
 
-            # Transcribe each chunk
             parts = []
             for i, chunk_path in enumerate(chunks):
                 print(f"  Chunk {i + 1}/{len(chunks)}...", file=sys.stderr)
@@ -453,7 +463,7 @@ def main():
     p.set_defaults(func=cmd_search)
 
     # pipeline
-    p = sub.add_parser("pipeline", help="Full chain: captions → download+transcribe")
+    p = sub.add_parser("pipeline", help="Full chain: captions -> download+transcribe")
     p.add_argument("url", help="Video/audio URL")
     p.add_argument("--model", default=DEFAULT_MODEL, help=f"Model ID (default: {DEFAULT_MODEL})")
     p.set_defaults(func=cmd_pipeline)
