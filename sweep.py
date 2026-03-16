@@ -11,6 +11,7 @@ Subcommands:
     batch    Split items into scoring batches
     format   Generate markdown digest from passed items
     save     Write markdown to file with collision detection
+    coverage Merge scanner coverage manifests into summary report
     pipeline Chain: score → dedup → format → save
 """
 from __future__ import annotations
@@ -21,6 +22,7 @@ import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
 
 # ── Constants ────────────────────────────────────────────────────────────────
 
@@ -28,8 +30,8 @@ WEIGHTS = {"R": 1.5, "Q": 1.0, "N": 1.5, "A": 1.0, "S": 1.0}
 WEIGHT_DIVISOR = sum(WEIGHTS.values())  # 6.0
 PASS_THRESHOLD = 3.5
 MUST_READ_THRESHOLD = 4.5
-BATCH_TRIGGER = 40
-BATCH_SIZE = 30
+BATCH_TRIGGER = 50
+BATCH_SIZE = 20
 
 CATEGORIES = [
     "AI Labs & Models",
@@ -84,7 +86,22 @@ def assign_verdict(weighted: float) -> str:
 
 
 def normalize_url(url: str) -> str:
-    return url.rstrip("/").lower()
+    parsed = urlparse(url.strip().rstrip("/").lower())
+    # Strip tracking params
+    params = parse_qs(parsed.query)
+    clean_params = {k: v for k, v in params.items()
+                    if k not in {"utm_source", "utm_medium", "utm_campaign",
+                                 "utm_content", "utm_term", "ref", "source", "via"}}
+    # Rebuild without fragment, with cleaned params
+    clean = urlunparse((
+        parsed.scheme,
+        parsed.netloc.removeprefix("www."),
+        parsed.path.removesuffix("/index.html"),
+        parsed.params,
+        urlencode(clean_params, doseq=True) if clean_params else "",
+        "",  # no fragment
+    ))
+    return clean
 
 
 def dedup_items(items: list[dict], seen: set[str]) -> list[dict]:
@@ -94,6 +111,14 @@ def dedup_items(items: list[dict], seen: set[str]) -> list[dict]:
         if it.get("verdict") != "FAIL"
         and normalize_url(it.get("url", "")) not in normalized_seen
     ]
+
+
+def truncate_by_score(items: list[dict], max_count: int) -> list[dict]:
+    """Sort by weighted score descending and take top N items."""
+    if max_count <= 0:
+        return items
+    sorted_items = sorted(items, key=lambda x: x.get("weighted", 0), reverse=True)
+    return sorted_items[:max_count]
 
 
 def split_batches(items: list) -> list[list]:
@@ -132,6 +157,7 @@ def format_digest(
     state_of_world: str = "",
     action_items: str = "",
     sweep_num: int | None = None,
+    coverage: dict | None = None,
 ) -> str:
     groups = group_by_category(items)
     must_reads = [it for it in items if it.get("verdict") == "MUST READ"]
@@ -182,7 +208,21 @@ def format_digest(
     sweep_tag = f" (sweep #{sweep_num})" if sweep_num else ""
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
     sections.append("---")
-    sections.append(f"Items scanned: {scanned} | Passed: {passed} | Must-reads: {mr_count}")
+    footer_line = f"Items scanned: {scanned} | Passed: {passed} | Must-reads: {mr_count}"
+    if coverage:
+        total = coverage.get("total_sources", 0)
+        visited = coverage.get("sources_visited", 0)
+        pct = coverage.get("coverage_pct", 0)
+        by_status = coverage.get("by_status", {})
+        missed_parts = []
+        for status in ("timeout", "error", "no_response"):
+            count = by_status.get(status, 0)
+            if count:
+                missed_parts.append(f"{count} {status.replace('_', ' ')}")
+        missed_str = f" ({', '.join(missed_parts)})" if missed_parts else ""
+        missed_total = total - visited
+        footer_line += f"\nSources: {visited}/{total} visited ({pct:.0f}%) | {missed_total} missed{missed_str}"
+    sections.append(footer_line)
     sections.append(f"Generated: {now} UTC{sweep_tag}")
     sections.append("")
 
@@ -232,6 +272,8 @@ def cmd_dedup(args):
             data = json.load(f)
             seen = set(data.get("seen", []))
     result = dedup_items(items, seen)
+    if args.max:
+        result = truncate_by_score(result, args.max)
     json.dump(result, sys.stdout, indent=2)
 
 
@@ -239,6 +281,13 @@ def cmd_batch(args):
     items = json.load(sys.stdin)
     batches = split_batches(items)
     json.dump(batches, sys.stdout, indent=2)
+
+
+def _load_coverage(path: str | None) -> dict | None:
+    if not path:
+        return None
+    with open(path) as f:
+        return json.load(f)
 
 
 def cmd_format(args):
@@ -251,13 +300,17 @@ def cmd_format(args):
         items = data.get("items", [])
         meta = data.get("meta", {})
 
+    if args.max:
+        items = truncate_by_score(items, args.max)
+
     date_str = args.date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
     scanned = args.scanned or meta.get("scanned", 0)
     state = args.state_of_world or meta.get("state_of_world", "")
     actions = args.action_items or meta.get("action_items", "")
     sweep_num = args.sweep_num or meta.get("sweep_num")
 
-    md = format_digest(items, date_str, scanned, state, actions, sweep_num)
+    coverage = _load_coverage(args.coverage_file)
+    md = format_digest(items, date_str, scanned, state, actions, sweep_num, coverage)
     sys.stdout.write(md)
 
 
@@ -289,10 +342,17 @@ def cmd_pipeline(args):
         seen = set(extract_urls(latest.read_text(encoding="utf-8")))
     items = dedup_items(items, seen)
 
+    # Truncate
+    if args.max:
+        items = truncate_by_score(items, args.max)
+
+    # Coverage
+    coverage = _load_coverage(args.coverage_file)
+
     # Format
     date_str = args.date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
     scanned = args.scanned or 0
-    md = format_digest(items, date_str, scanned, sweep_num=args.sweep_num)
+    md = format_digest(items, date_str, scanned, sweep_num=args.sweep_num, coverage=coverage)
 
     # Save
     digests_dir.mkdir(parents=True, exist_ok=True)
@@ -304,6 +364,51 @@ def cmd_pipeline(args):
     result = {"path": str(filepath), "passed": len(items), "must_reads": must_reads}
     json.dump(result, sys.stderr, indent=2)
     sys.stderr.write("\n")
+
+
+def cmd_coverage(args):
+    """Merge scanner coverage manifests into a summary report."""
+    manifests = json.load(sys.stdin)
+    if not isinstance(manifests, list):
+        manifests = [manifests]
+
+    all_sources: dict[str, dict] = {}
+    for manifest in manifests:
+        cov = manifest.get("coverage")
+        if not cov:
+            continue
+        scanner = cov.get("scanner", "unknown")
+        for name, info in cov.get("sources", {}).items():
+            all_sources[name] = {**info, "scanner": scanner}
+
+    by_status: dict[str, int] = {}
+    for info in all_sources.values():
+        status = info.get("status", "no_response")
+        by_status[status] = by_status.get(status, 0) + 1
+
+    total = len(all_sources) or args.total_sources or 0
+    visited = by_status.get("ok", 0) + by_status.get("empty", 0)
+    pct = round(visited / total * 100, 1) if total else 0
+
+    missed = [
+        {"name": name, "scanner": info.get("scanner"), "status": info.get("status"), "error": info.get("error")}
+        for name, info in all_sources.items()
+        if info.get("status") not in ("ok", "empty")
+    ]
+
+    report = {
+        "total_sources": total,
+        "sources_visited": visited,
+        "coverage_pct": pct,
+        "by_status": by_status,
+        "missed_sources": missed,
+    }
+
+    # Save to file if requested
+    if args.output:
+        Path(args.output).write_text(json.dumps(report, indent=2), encoding="utf-8")
+
+    json.dump(report, sys.stdout, indent=2)
 
 
 # ── CLI ──────────────────────────────────────────────────────────────────────
@@ -326,6 +431,7 @@ def main():
     # dedup
     p = sub.add_parser("dedup", help="Remove seen URLs and failed items (stdin: JSON)")
     p.add_argument("--seen-file", help="JSON file from 'seen' subcommand")
+    p.add_argument("--max", type=int, default=0, help="Max items to keep (0 = no cap)")
     p.set_defaults(func=cmd_dedup)
 
     # batch
@@ -339,6 +445,8 @@ def main():
     p.add_argument("--state-of-world", help="State of the World text")
     p.add_argument("--action-items", help="Top 3 action items text")
     p.add_argument("--sweep-num", type=int, help="Sweep number for footer")
+    p.add_argument("--max", type=int, default=0, help="Max items to keep (0 = no cap)")
+    p.add_argument("--coverage-file", help="Coverage JSON file for footer stats")
     p.set_defaults(func=cmd_format)
 
     # save
@@ -347,12 +455,20 @@ def main():
     p.add_argument("--date", help="Digest date (YYYY-MM-DD)")
     p.set_defaults(func=cmd_save)
 
+    # coverage
+    p = sub.add_parser("coverage", help="Merge scanner coverage manifests (stdin: JSON)")
+    p.add_argument("--total-sources", type=int, default=94, help="Total expected sources")
+    p.add_argument("--output", help="Save report to this file path")
+    p.set_defaults(func=cmd_coverage)
+
     # pipeline
     p = sub.add_parser("pipeline", help="Full pipeline: score→dedup→format→save")
     p.add_argument("--digests-dir", default=DEFAULT_DIGESTS_DIR)
     p.add_argument("--date", help="Digest date (YYYY-MM-DD)")
     p.add_argument("--scanned", type=int, default=0, help="Total items scanned")
     p.add_argument("--sweep-num", type=int, help="Sweep number")
+    p.add_argument("--max", type=int, default=0, help="Max items to keep (0 = no cap)")
+    p.add_argument("--coverage-file", help="Coverage JSON file for footer stats")
     p.set_defaults(func=cmd_pipeline)
 
     args = parser.parse_args()

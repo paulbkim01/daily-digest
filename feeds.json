@@ -1,0 +1,662 @@
+{
+  "sources": [
+    {
+      "slug": "anthropic-blog",
+      "name": "Anthropic Blog",
+      "site_url": "https://anthropic.com/blog",
+      "feed_url": null,
+      "tier": "1"
+    },
+    {
+      "slug": "openai-blog",
+      "name": "OpenAI Blog",
+      "site_url": "https://openai.com/blog",
+      "feed_url": "https://openai.com/blog/rss.xml",
+      "tier": "1"
+    },
+    {
+      "slug": "deepmind-blog",
+      "name": "Google DeepMind",
+      "site_url": "https://deepmind.google/blog",
+      "feed_url": "https://deepmind.google/blog/rss.xml",
+      "tier": "1"
+    },
+    {
+      "slug": "meta-ai-blog",
+      "name": "Meta AI",
+      "site_url": "https://ai.meta.com/blog",
+      "feed_url": null,
+      "tier": "1"
+    },
+    {
+      "slug": "microsoft-research",
+      "name": "Microsoft Research",
+      "site_url": "https://microsoft.com/en-us/research/blog",
+      "feed_url": "https://www.microsoft.com/en-us/research/feed/",
+      "tier": "1"
+    },
+    {
+      "slug": "mistral-news",
+      "name": "Mistral",
+      "site_url": "https://mistral.ai/news",
+      "feed_url": null,
+      "tier": "1"
+    },
+    {
+      "slug": "cohere-blog",
+      "name": "Cohere",
+      "site_url": "https://cohere.com/blog",
+      "feed_url": "https://cohere.com/blog/rss.xml",
+      "tier": "1"
+    },
+    {
+      "slug": "xai-blog",
+      "name": "xAI",
+      "site_url": "https://x.ai/blog",
+      "feed_url": null,
+      "tier": "1"
+    },
+    {
+      "slug": "cursor-blog",
+      "name": "Cursor Blog",
+      "site_url": "https://cursor.com/blog",
+      "feed_url": null,
+      "tier": "2"
+    },
+    {
+      "slug": "windsurf-codeium-blog",
+      "name": "Windsurf/Codeium",
+      "site_url": "https://codeium.com/blog",
+      "feed_url": "https://codeium.com/blog/rss.xml",
+      "tier": "2"
+    },
+    {
+      "slug": "vercel-blog",
+      "name": "Vercel Blog",
+      "site_url": "https://vercel.com/blog",
+      "feed_url": "https://vercel.com/atom",
+      "tier": "2"
+    },
+    {
+      "slug": "replit-blog",
+      "name": "Replit Blog",
+      "site_url": "https://blog.replit.com",
+      "feed_url": "https://blog.replit.com/feed.xml",
+      "tier": "2"
+    },
+    {
+      "slug": "github-blog",
+      "name": "GitHub Blog",
+      "site_url": "https://github.blog",
+      "feed_url": "https://github.blog/feed/",
+      "tier": "2"
+    },
+    {
+      "slug": "langchain-blog",
+      "name": "LangChain Blog",
+      "site_url": "https://blog.langchain.dev",
+      "feed_url": "https://blog.langchain.dev/rss/",
+      "tier": "2"
+    },
+    {
+      "slug": "llamaindex-blog",
+      "name": "LlamaIndex",
+      "site_url": "https://llamaindex.ai/blog",
+      "feed_url": null,
+      "tier": "2"
+    },
+    {
+      "slug": "huggingface-blog",
+      "name": "Hugging Face Blog",
+      "site_url": "https://huggingface.co/blog",
+      "feed_url": "https://huggingface.co/blog/feed.xml",
+      "tier": "2"
+    },
+    {
+      "slug": "airbnb-engineering",
+      "name": "Airbnb Engineering",
+      "site_url": "https://medium.com/airbnb-engineering",
+      "feed_url": "https://medium.com/feed/airbnb-engineering",
+      "tier": "3"
+    },
+    {
+      "slug": "discord-engineering",
+      "name": "Discord Engineering",
+      "site_url": "https://discord.com/blog/engineering",
+      "feed_url": null,
+      "tier": "3"
+    },
+    {
+      "slug": "netflix-tech-blog",
+      "name": "Netflix Tech Blog",
+      "site_url": "https://netflixtechblog.com",
+      "feed_url": "https://netflixtechblog.medium.com/feed",
+      "tier": "3"
+    },
+    {
+      "slug": "uber-engineering",
+      "name": "Uber Engineering",
+      "site_url": "https://uber.com/blog/engineering",
+      "feed_url": null,
+      "tier": "3"
+    },
+    {
+      "slug": "stripe-engineering",
+      "name": "Stripe Engineering",
+      "site_url": "https://stripe.com/blog/engineering",
+      "feed_url": null,
+      "tier": "3"
+    },
+    {
+      "slug": "spotify-engineering",
+      "name": "Spotify Engineering",
+      "site_url": "https://engineering.atspotify.com",
+      "feed_url": "https://engineering.atspotify.com/feed/",
+      "tier": "3"
+    },
+    {
+      "slug": "cloudflare-blog",
+      "name": "Cloudflare Blog",
+      "site_url": "https://blog.cloudflare.com",
+      "feed_url": "https://blog.cloudflare.com/rss/",
+      "tier": "3"
+    },
+    {
+      "slug": "figma-engineering",
+      "name": "Figma Engineering",
+      "site_url": "https://figma.com/blog/engineering",
+      "feed_url": null,
+      "tier": "3"
+    },
+    {
+      "slug": "linear-blog",
+      "name": "Linear Blog",
+      "site_url": "https://linear.app/blog",
+      "feed_url": "https://linear.app/rss/now.xml",
+      "tier": "3"
+    },
+    {
+      "slug": "shopify-engineering",
+      "name": "Shopify Engineering",
+      "site_url": "https://shopify.engineering",
+      "feed_url": null,
+      "tier": "3"
+    },
+    {
+      "slug": "supabase-blog",
+      "name": "Supabase Blog",
+      "site_url": "https://supabase.com/blog",
+      "feed_url": "https://supabase.com/blog/rss.xml",
+      "tier": "3"
+    },
+    {
+      "slug": "aws-architecture-blog",
+      "name": "AWS Architecture Blog",
+      "site_url": "https://aws.amazon.com/blogs/architecture",
+      "feed_url": "https://aws.amazon.com/blogs/architecture/feed/",
+      "tier": "3"
+    },
+    {
+      "slug": "aws-ml-blog",
+      "name": "AWS Machine Learning Blog",
+      "site_url": "https://aws.amazon.com/blogs/machine-learning",
+      "feed_url": "https://aws.amazon.com/blogs/machine-learning/feed/",
+      "tier": "3"
+    },
+    {
+      "slug": "digitalocean-blog",
+      "name": "DigitalOcean Blog",
+      "site_url": "https://digitalocean.com/blog",
+      "feed_url": null,
+      "tier": "3"
+    },
+    {
+      "slug": "akamai-blog",
+      "name": "Akamai/Linode Blog",
+      "site_url": "https://akamai.com/blog",
+      "feed_url": null,
+      "tier": "3"
+    },
+    {
+      "slug": "wandb-blog",
+      "name": "Weights & Biases Blog",
+      "site_url": "https://wandb.ai/fully-connected/blog",
+      "feed_url": "https://wandb.ai/fully-connected/blog/rss.xml",
+      "tier": "3b"
+    },
+    {
+      "slug": "databricks-blog",
+      "name": "Databricks Blog",
+      "site_url": "https://databricks.com/blog",
+      "feed_url": null,
+      "tier": "3b"
+    },
+    {
+      "slug": "anyscale-blog",
+      "name": "Anyscale / Ray Blog",
+      "site_url": "https://anyscale.com/blog",
+      "feed_url": "https://www.anyscale.com/blog/rss.xml",
+      "tier": "3b"
+    },
+    {
+      "slug": "modal-blog",
+      "name": "Modal Blog",
+      "site_url": "https://modal.com/blog",
+      "feed_url": null,
+      "tier": "3b"
+    },
+    {
+      "slug": "bentoml-blog",
+      "name": "BentoML Blog",
+      "site_url": "https://bentoml.com/blog",
+      "feed_url": null,
+      "tier": "3b"
+    },
+    {
+      "slug": "arize-blog",
+      "name": "Arize AI Blog",
+      "site_url": "https://arize.com/blog",
+      "feed_url": "https://arize.com/rss",
+      "tier": "3b"
+    },
+    {
+      "slug": "evidently-blog",
+      "name": "Evidently AI Blog",
+      "site_url": "https://evidentlyai.com/blog",
+      "feed_url": null,
+      "tier": "3b"
+    },
+    {
+      "slug": "zenml-blog",
+      "name": "ZenML Blog",
+      "site_url": "https://zenml.io/blog",
+      "feed_url": "https://zenml.io/blog/rss.xml",
+      "tier": "3b"
+    },
+    {
+      "slug": "outerbounds-blog",
+      "name": "Outerbounds Blog",
+      "site_url": "https://outerbounds.com/blog",
+      "feed_url": null,
+      "tier": "3b"
+    },
+    {
+      "slug": "replicate-blog",
+      "name": "Replicate Blog",
+      "site_url": "https://replicate.com/blog",
+      "feed_url": "https://replicate.com/blog/rss",
+      "tier": "3b"
+    },
+    {
+      "slug": "tecton-blog",
+      "name": "Tecton Blog",
+      "site_url": "https://tecton.ai/blog",
+      "feed_url": "https://www.tecton.ai/blog/feed/",
+      "tier": "3b"
+    },
+    {
+      "slug": "doordash-engineering",
+      "name": "DoorDash Engineering",
+      "site_url": "https://doordash.engineering",
+      "feed_url": null,
+      "tier": "3b"
+    },
+    {
+      "slug": "pinterest-engineering",
+      "name": "Pinterest Engineering",
+      "site_url": "https://medium.com/pinterest-engineering",
+      "feed_url": "https://medium.com/feed/pinterest-engineering",
+      "tier": "3b"
+    },
+    {
+      "slug": "mlops-community",
+      "name": "MLOps Community",
+      "site_url": "https://home.mlops.community",
+      "feed_url": null,
+      "tier": "3b"
+    },
+    {
+      "slug": "hacker-news",
+      "name": "Hacker News",
+      "site_url": "https://news.ycombinator.com",
+      "feed_url": "https://hnrss.org/frontpage",
+      "tier": "4"
+    },
+    {
+      "slug": "reddit-machinelearning",
+      "name": "Reddit r/MachineLearning",
+      "site_url": "https://reddit.com/r/MachineLearning",
+      "feed_url": "https://www.reddit.com/r/MachineLearning/.rss",
+      "tier": "4"
+    },
+    {
+      "slug": "reddit-localllama",
+      "name": "Reddit r/LocalLLaMA",
+      "site_url": "https://reddit.com/r/LocalLLaMA",
+      "feed_url": "https://www.reddit.com/r/LocalLLaMA/.rss",
+      "tier": "4"
+    },
+    {
+      "slug": "reddit-chatgpt",
+      "name": "Reddit r/ChatGPT",
+      "site_url": "https://reddit.com/r/ChatGPT",
+      "feed_url": "https://www.reddit.com/r/ChatGPT/.rss",
+      "tier": "4"
+    },
+    {
+      "slug": "reddit-singularity",
+      "name": "Reddit r/singularity",
+      "site_url": "https://reddit.com/r/singularity",
+      "feed_url": "https://www.reddit.com/r/singularity/.rss",
+      "tier": "4"
+    },
+    {
+      "slug": "reddit-experienceddevs",
+      "name": "Reddit r/ExperiencedDevs",
+      "site_url": "https://reddit.com/r/ExperiencedDevs",
+      "feed_url": "https://www.reddit.com/r/ExperiencedDevs/.rss",
+      "tier": "4"
+    },
+    {
+      "slug": "devto",
+      "name": "dev.to",
+      "site_url": "https://dev.to/top/week",
+      "feed_url": "https://dev.to/feed",
+      "tier": "4"
+    },
+    {
+      "slug": "lobsters",
+      "name": "Lobsters",
+      "site_url": "https://lobste.rs",
+      "feed_url": "https://lobste.rs/rss",
+      "tier": "4"
+    },
+    {
+      "slug": "github-trending",
+      "name": "GitHub Trending",
+      "site_url": "https://github.com/trending",
+      "feed_url": null,
+      "tier": "4"
+    },
+    {
+      "slug": "product-hunt",
+      "name": "Product Hunt",
+      "site_url": "https://producthunt.com",
+      "feed_url": "https://www.producthunt.com/feed",
+      "tier": "4"
+    },
+    {
+      "slug": "the-gradient",
+      "name": "The Gradient",
+      "site_url": "https://thegradient.pub",
+      "feed_url": "https://thegradient.pub/rss/",
+      "tier": "4"
+    },
+    {
+      "slug": "import-ai",
+      "name": "Import AI Newsletter",
+      "site_url": "https://importai.net",
+      "feed_url": "https://importai.substack.com/feed",
+      "tier": "4"
+    },
+    {
+      "slug": "the-batch",
+      "name": "The Batch by Andrew Ng",
+      "site_url": "https://deeplearning.ai/the-batch",
+      "feed_url": null,
+      "tier": "4"
+    },
+    {
+      "slug": "marvelous-mlops",
+      "name": "Marvelous MLOps Newsletter",
+      "site_url": "https://marvelousmlops.substack.com",
+      "feed_url": "https://marvelousmlops.substack.com/feed",
+      "tier": "4"
+    },
+    {
+      "slug": "ml-engineer-newsletter",
+      "name": "The Machine Learning Engineer Newsletter",
+      "site_url": "https://machinelearning.substack.com",
+      "feed_url": "https://machinelearning.substack.com/feed",
+      "tier": "4"
+    },
+    {
+      "slug": "hf-daily-papers",
+      "name": "Hugging Face Daily Papers",
+      "site_url": "https://huggingface.co/papers",
+      "feed_url": null,
+      "tier": "5"
+    },
+    {
+      "slug": "arxiv-cs-ai",
+      "name": "arXiv cs.AI",
+      "site_url": "https://arxiv.org/list/cs.AI/recent",
+      "feed_url": "https://rss.arxiv.org/rss/cs.AI",
+      "tier": "5"
+    },
+    {
+      "slug": "arxiv-cs-cl",
+      "name": "arXiv cs.CL",
+      "site_url": "https://arxiv.org/list/cs.CL/recent",
+      "feed_url": "https://rss.arxiv.org/rss/cs.CL",
+      "tier": "5"
+    },
+    {
+      "slug": "arxiv-cs-se",
+      "name": "arXiv cs.SE",
+      "site_url": "https://arxiv.org/list/cs.SE/recent",
+      "feed_url": "https://rss.arxiv.org/rss/cs.SE",
+      "tier": "5"
+    },
+    {
+      "slug": "semantic-scholar",
+      "name": "Semantic Scholar",
+      "site_url": "https://semanticscholar.org/research-feeds",
+      "feed_url": null,
+      "tier": "5"
+    },
+    {
+      "slug": "papers-with-code",
+      "name": "Papers With Code",
+      "site_url": "https://paperswithcode.com",
+      "feed_url": "https://paperswithcode.com/rss",
+      "tier": "5"
+    },
+    {
+      "slug": "simon-willison",
+      "name": "Simon Willison",
+      "site_url": "https://simonwillison.net",
+      "feed_url": "https://simonwillison.net/atom/everything/",
+      "tier": "6"
+    },
+    {
+      "slug": "andrej-karpathy",
+      "name": "Andrej Karpathy",
+      "site_url": "https://karpathy.ai",
+      "feed_url": null,
+      "tier": "6"
+    },
+    {
+      "slug": "lilian-weng",
+      "name": "Lilian Weng",
+      "site_url": "https://lilianweng.github.io",
+      "feed_url": "https://lilianweng.github.io/index.xml",
+      "tier": "6"
+    },
+    {
+      "slug": "eugene-yan",
+      "name": "Eugene Yan",
+      "site_url": "https://eugeneyan.com",
+      "feed_url": "https://eugeneyan.com/rss/",
+      "tier": "6"
+    },
+    {
+      "slug": "chip-huyen",
+      "name": "Chip Huyen",
+      "site_url": "https://huyenchip.com",
+      "feed_url": "https://huyenchip.com/feed.xml",
+      "tier": "6"
+    },
+    {
+      "slug": "latent-space",
+      "name": "swyx / Latent Space",
+      "site_url": "https://latent.space",
+      "feed_url": "https://www.latent.space/feed",
+      "tier": "6"
+    },
+    {
+      "slug": "hamel-husain",
+      "name": "Hamel Husain",
+      "site_url": "https://hamel.dev",
+      "feed_url": "https://hamel.dev/index.xml",
+      "tier": "6"
+    },
+    {
+      "slug": "jason-wei",
+      "name": "Jason Wei",
+      "site_url": null,
+      "feed_url": null,
+      "tier": "6"
+    },
+    {
+      "slug": "jim-fan",
+      "name": "Jim Fan (NVIDIA)",
+      "site_url": null,
+      "feed_url": null,
+      "tier": "6"
+    },
+    {
+      "slug": "harrison-chase",
+      "name": "Harrison Chase (LangChain)",
+      "site_url": null,
+      "feed_url": null,
+      "tier": "6"
+    },
+    {
+      "slug": "vicki-boykis",
+      "name": "Vicki Boykis",
+      "site_url": "https://vickiboykis.com",
+      "feed_url": "https://vickiboykis.com/index.xml",
+      "tier": "6"
+    },
+    {
+      "slug": "shreya-shankar",
+      "name": "Shreya Shankar",
+      "site_url": "https://sh-reya.com/blog",
+      "feed_url": null,
+      "tier": "6"
+    },
+    {
+      "slug": "jacopo-tagliabue",
+      "name": "Jacopo Tagliabue",
+      "site_url": "https://jacopotagliabue.it",
+      "feed_url": null,
+      "tier": "6"
+    },
+    {
+      "slug": "goku-mohandas",
+      "name": "Goku Mohandas / Made With ML",
+      "site_url": "https://madewithml.com",
+      "feed_url": null,
+      "tier": "6"
+    },
+    {
+      "slug": "lex-fridman",
+      "name": "Lex Fridman Podcast",
+      "site_url": "https://youtube.com/@lexfridman",
+      "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCSHZKyawb77ixDdsGog4iWA",
+      "tier": "7"
+    },
+    {
+      "slug": "latent-space-podcast",
+      "name": "Latent Space Podcast",
+      "site_url": "https://latent.space/podcast",
+      "feed_url": "https://api.substack.com/feed/podcast/1084089.rss",
+      "tier": "7"
+    },
+    {
+      "slug": "practical-ai",
+      "name": "Practical AI",
+      "site_url": "https://changelog.com/practicalai",
+      "feed_url": "https://changelog.com/practicalai/feed",
+      "tier": "7"
+    },
+    {
+      "slug": "ai-explained",
+      "name": "AI Explained",
+      "site_url": "https://youtube.com/@AiExplained",
+      "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCNJ1Ymd5yFuUPtn21xtRbbw",
+      "tier": "7"
+    },
+    {
+      "slug": "yannic-kilcher",
+      "name": "Yannic Kilcher",
+      "site_url": "https://youtube.com/@YannicKilcher",
+      "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCZHmQk67mSJgfCCTn7xBfew",
+      "tier": "7"
+    },
+    {
+      "slug": "two-minute-papers",
+      "name": "Two Minute Papers",
+      "site_url": "https://youtube.com/@TwoMinutePapers",
+      "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCbfYPyITQ-7l4upoX8nvctg",
+      "tier": "7"
+    },
+    {
+      "slug": "theprimeagen",
+      "name": "ThePrimeagen",
+      "site_url": "https://youtube.com/@ThePrimeagen",
+      "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UC8ENHE5xdFSwx71u3fDH5Xw",
+      "tier": "7"
+    },
+    {
+      "slug": "fireship",
+      "name": "Fireship",
+      "site_url": "https://youtube.com/@Fireship",
+      "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCsBjURrPoezykLs9EqgamOA",
+      "tier": "7"
+    },
+    {
+      "slug": "ai-jason",
+      "name": "AI Jason",
+      "site_url": "https://youtube.com/@AIJason",
+      "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UCAnJ6_Zjv7PzVTKtbG8nH8A",
+      "tier": "7"
+    },
+    {
+      "slug": "matt-wolfe",
+      "name": "Matt Wolfe",
+      "site_url": "https://youtube.com/@MattWolfe",
+      "feed_url": "https://www.youtube.com/feeds/videos.xml?channel_id=UChpleBmo18P08aKCIgti38g",
+      "tier": "7"
+    },
+    {
+      "slug": "a16z-blog",
+      "name": "a16z Blog",
+      "site_url": "https://a16z.com/blog",
+      "feed_url": null,
+      "tier": "8"
+    },
+    {
+      "slug": "techcrunch-ai",
+      "name": "TechCrunch AI",
+      "site_url": "https://techcrunch.com/category/artificial-intelligence",
+      "feed_url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+      "tier": "8"
+    },
+    {
+      "slug": "bloomberg-tech",
+      "name": "Bloomberg Tech",
+      "site_url": null,
+      "feed_url": null,
+      "tier": "8"
+    },
+    {
+      "slug": "cb-insights-ai",
+      "name": "CB Insights AI",
+      "site_url": null,
+      "feed_url": null,
+      "tier": "8"
+    }
+  ]
+}
