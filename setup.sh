@@ -157,7 +157,7 @@ if [ -f "$SKILL_DIR/humanizer/SKILL.md" ]; then
   ok "Humanizer skill present"
 else
   warn "Humanizer skill not found at $SKILL_DIR/humanizer/"
-  echo "  To install: cd .claude/skills && git clone https://github.com/blader/humanizer.git"
+  echo "  The humanizer skill should be at .claude/skills/humanizer/. Re-clone the repository if missing."
 fi
 
 # ── 6. Digests directory ─────────────────────────────────────────────────────

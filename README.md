@@ -2,13 +2,13 @@
 
 [한국어](README.ko.md)
 
-There are too many AI/ML blogs, papers, and YouTube channels to keep up with. This project does it for you. It scans 80+ sources, scores each article on a 5-axis rubric, throws out anything below a 3.5/5.0, and saves what's left as a markdown digest. Built for engineers who'd rather build than read RSS feeds all morning.
+There are too many AI/ML blogs, papers, and YouTube channels to keep up with. This project does it for you. It scans 90+ sources, scores each article on a 5-axis rubric, throws out anything below a 3.5/5.0, and saves what's left as a markdown digest. Built for engineers who'd rather build than read RSS feeds all morning.
 
 ## What it does
 
 You tell Claude "run a research sweep" and it:
 
-1. Fans out 5 parallel scanner agents across 8 tiers of sources (AI labs, tooling companies, engineering blogs, MLOps, communities, research papers, YouTube/podcasts, market intel)
+1. Fans out 15 parallel scanner agents across 8 tiers of sources (AI labs, tooling companies, engineering blogs, MLOps, communities, research papers, YouTube/podcasts, market intel)
 2. Collects raw results and deduplicates against the previous digest
 3. Scores each item on Relevance, Quality, Novelty, Actionability, and Signal/Noise (weighted average, threshold 3.5/5.0)
 4. Filters, groups by category, and formats a markdown digest
@@ -57,7 +57,7 @@ claude "run a research sweep"
 # or: "scan all sources and make a digest"
 ```
 
-This takes a few minutes. Claude launches 5 scanner agents in parallel, scores results, and saves a digest to `digests/YYYY-MM-DD.md`.
+This takes a few minutes. Claude launches 15 scanner agents in parallel (two waves), scores results, and saves a digest to `digests/YYYY-MM-DD.md`.
 
 ### Scan a single source tier
 
@@ -89,7 +89,7 @@ claude "/loop generate the digest every day"
 
 ## How scoring works
 
-Each article gets rated 1-5 on five axes:
+Each article gets rated 1-5 on five axes (weights and thresholds defined in `sweep.py`):
 
 | Criterion | Weight | What it measures |
 |-----------|--------|-----------------|
@@ -109,38 +109,45 @@ Most content scores below 3.5. That's the point. You only see what's worth your 
 
 ## Source registry
 
-80+ sources organized into 8 tiers:
+94 sources organized into 8 tiers:
 
 | Tier | Sources | Examples |
 |------|---------|---------|
 | 1. AI Labs | 8 | Anthropic, OpenAI, DeepMind, Meta AI, Mistral |
-| 2. AI Tooling | 8 | Cursor, Vercel, GitHub, LangChain, Hugging Face |
+| 2. AI Tooling | 8 | Cursor, Windsurf/Codeium, Vercel, GitHub, LangChain, Hugging Face |
 | 3. Engineering Blogs | 15 | Netflix, Stripe, Cloudflare, Shopify, AWS |
 | 3b. MLOps | 14 | Weights & Biases, Databricks, Modal, Arize AI |
-| 4. Communities | 11 | Hacker News, Reddit, GitHub Trending, newsletters |
-| 5. Research | 5 | arXiv, Hugging Face Papers, Papers With Code |
+| 4. Communities | 15 | Hacker News, Reddit (5 subs), dev.to, Lobsters, GitHub Trending, newsletters |
+| 5. Research | 6 | arXiv (cs.AI, cs.CL, cs.SE), Hugging Face Papers, Papers With Code |
 | 6. Individuals | 14 | Simon Willison, Andrej Karpathy, Chip Huyen |
 | 7. Video & Audio | 10 | Lex Fridman, Latent Space, Fireship, Yannic Kilcher |
 | 8. Market Intel | 4 | a16z, TechCrunch AI, CB Insights |
 
-To add or remove sources, edit `research-sweep-prompt.md`. That file is the single source of truth. The skills read it at runtime.
+60 of these sources have RSS/Atom feeds (fetched by `feed_parser.py`); the remaining 34 use WebSearch fallback.
+
+To add or remove sources, edit both `research-sweep-prompt.md` (source registry) and `feeds.json` (feed URLs). The skills read both at runtime.
 
 ## Project structure
 
 ```
 intel/
   sweep.py                    # Deterministic pipeline (scoring math, dedup, formatting, file I/O)
+  feed_parser.py              # RSS/Atom feed fetcher (stdlib-only, no dependencies)
+  feeds.json                  # Feed URL registry for all 94 sources
+  input.py                    # Interactive config (timeframe, max articles, timeout)
   research-sweep-prompt.md    # Source registry + scoring rubric + rules
   setup.sh                    # Environment setup and validation
   digests/                    # Output directory for markdown digests
   .claude/
+    lang.conf                 # Language preference (en or ko)
     skills/
-      research-sweep/         # Full sweep orchestrator
+      research-sweep/         # Full sweep orchestrator (15 parallel scanners)
       scan-sources/           # Single-tier scanner
       score-article/          # Individual article scorer
       research-digest/        # Digest formatter
       install/                # Setup and validation
       humanizer/              # AI writing pattern removal
+      korean-translator/      # English → Korean technical translation
       playwright-skill/       # Browser automation for JS-heavy sites
 ```
 
@@ -148,7 +155,7 @@ intel/
 
 The split between `sweep.py` and the LLM agents is intentional. Python handles everything deterministic (score math, dedup, formatting, file I/O) while the LLM agents handle everything that needs judgment (searching, scoring 1-5, writing summaries). This way the scoring formula never drifts between runs.
 
-The 5 scanner agents run in parallel. Higher-value tiers (AI labs, research papers) use Sonnet for accuracy. Lower-value tiers (communities, market) use Haiku for speed.
+The 15 scanner agents run in two parallel waves. Five high-judgment scanners (AI labs frontier, tooling IDEs, research papers, individual LLM bloggers, media/market) use Sonnet for accuracy. The other ten use Haiku for speed.
 
 Every URL must point to a specific article, not a blog index or homepage. Bad URLs get discarded. This matters because LLMs love to hallucinate plausible-sounding links to blog index pages instead of actual articles.
 

@@ -1,6 +1,6 @@
 # Research Sweep Pipeline
 
-AI-powered research digest generator. Scans 80+ sources, scores articles, and produces weekly digests for senior SWEs building with AI/agents.
+AI-powered research digest generator. Scans 90+ sources, scores articles, and produces weekly digests for senior SWEs building with AI/agents.
 
 ## Setup
 
@@ -8,8 +8,11 @@ First time? Ask Claude to "install the pipeline" or run `bash setup.sh`.
 
 ## Architecture
 
-- `sweep.py` — deterministic pipeline (scoring math, dedup, formatting, file I/O)
-- `research-sweep-prompt.md` — single source of truth for sources and rubric
+- `sweep.py` — deterministic pipeline (scoring math, dedup, formatting, coverage, file I/O)
+- `feed_parser.py` — RSS/Atom feed fetcher (stdlib-only, no dependencies)
+- `feeds.json` — feed URL registry for all 94 sources (used by feed_parser.py)
+- `input.py` — interactive config (timeframe, max articles, timeout) → writes `/tmp/sweep-config.json`
+- `research-sweep-prompt.md` — single source of truth for source registry and rubric prose (scoring math in sweep.py)
 - `.claude/skills/` — skills auto-discovered by Claude (pipeline stages, humanizer, playwright)
 - `digests/` — output directory for markdown digests
 
@@ -17,18 +20,11 @@ First time? Ask Claude to "install the pipeline" or run `bash setup.sh`.
 
 ### Humanizer (writing quality)
 
-All writing output — tldrs, State of the World, Action Items — must go through a humanizer pass. Apply these rules to any text you write for the digest:
+All writing output must go through a humanizer pass. Avoid AI vocabulary ("delve", "landscape",
+"paradigm", etc.), em-dash overuse, rule-of-three patterns, and promotional language. Write like
+a sharp analyst talking to a peer, not a press release.
 
-- No AI vocabulary: avoid "delve", "landscape", "paradigm", "leverage", "robust", "comprehensive", "tapestry", "testament", "pivotal", "foster", "underscore", "showcase"
-- No em-dash overuse, no rule-of-three patterns, no promotional language
-- No negative parallelisms ("It's not just X; it's Y")
-- No vague attributions ("Experts say", "Industry observers")
-- No generic conclusions ("The future looks bright")
-- Write like a sharp analyst talking to a peer in Slack, not a press release
-- Vary sentence length. Be direct. Use concrete numbers over abstractions.
-- Have opinions. Acknowledge complexity. Let some edge in.
-
-Full reference: `.claude/skills/humanizer/SKILL.md`
+Full rules: `.claude/skills/humanizer/SKILL.md`
 
 ### Playwright (browser scraping)
 
@@ -44,7 +40,7 @@ Setup: `cd .claude/skills/playwright-skill && npm run setup`
 
 When scraping with Playwright, use headless mode and the Accept: text/markdown header where supported:
 ```bash
-PW_HEADER_NAME=Accept PW_HEADER_VALUE=text/markdown cd .claude/skills/playwright-skill && node run.js /tmp/scrape-script.js
+cd .claude/skills/playwright-skill && PW_HEADER_NAME=Accept PW_HEADER_VALUE=text/markdown node run.js /tmp/scrape-script.js
 ```
 
 ### Korean translation (digest language)
@@ -71,7 +67,9 @@ Claude auto-discovers these skills from `.claude/skills/`. No slash commands nee
 | scan-sources | "scan tier 3", "check a source tier" |
 | score-article | "score this article", providing a URL |
 | research-digest | "generate the digest", "format the digest" |
+| humanizer | "humanize this text", reviewing writing quality |
 | korean-translator | "translate to Korean", "Korean version" |
+| playwright-skill | browser automation, scraping JS-heavy pages |
 
 ## Writing Style
 

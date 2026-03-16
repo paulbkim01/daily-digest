@@ -2,13 +2,13 @@
 
 [English](README.md)
 
-AI/ML 블로그, 논문, YouTube 채널이 너무 많아서 다 읽기 힘들잖아요? 이 프로젝트가 대신 해줍니다. 80개 이상의 소스를 스캔하고, 각 아티클을 5개 축으로 평가한 뒤, 순위를 매겨 가치가 있는 글들의 리스트를 정리합니다. 아침마다 RSS 피드 읽느라 시간 쓰기 싫은 엔지니어를 위해 만들었습니다.
+AI/ML 블로그, 논문, YouTube 채널이 너무 많아서 다 읽기 힘들잖아요? 이 프로젝트가 대신 해줍니다. 94개의 소스를 스캔하고, 각 아티클을 5개 축으로 평가한 뒤, 순위를 매겨 가치가 있는 글들의 리스트를 정리합니다. 아침마다 RSS 피드 읽느라 시간 쓰기 싫은 엔지니어를 위해 만들었습니다.
 
 ## 동작 방식
 
 Claude에게 "run a research sweep"이라고 말하면 다음과 같이 동작합니다:
 
-1. 8개 티어의 소스(AI 연구소, 툴링 회사, 엔지니어링 블로그, MLOps, 커뮤니티, 논문, YouTube/팟캐스트, 시장 동향)에 5개의 스캐너 에이전트를 병렬로 분산 실행
+1. 8개 티어의 소스(AI 연구소, 툴링 회사, 엔지니어링 블로그, MLOps, 커뮤니티, 논문, YouTube/팟캐스트, 시장 동향)에 15개의 스캐너 에이전트를 병렬로 분산 실행
 2. 수집된 결과를 이전 다이제스트와 비교해 중복 제거
 3. 각 항목을 Relevance, Quality, Novelty, Actionability, Signal/Noise 기준으로 채점 (가중 평균, 임계값 3.5/5.0)
 4. 카테고리별로 분류하고 마크다운 다이제스트로 포맷팅
@@ -57,7 +57,7 @@ claude "run a research sweep"
 # 또는: "scan all sources and make a digest"
 ```
 
-몇 분 정도 소요됩니다. Claude가 5개의 스캐너 에이전트를 병렬로 띄우고, 결과를 채점한 뒤, `digests/YYYY-MM-DD.md`로 저장합니다.
+몇 분 정도 소요됩니다. Claude가 15개의 스캐너 에이전트를 두 차례에 걸쳐 병렬로 띄우고, 결과를 채점한 뒤, `digests/YYYY-MM-DD.md`로 저장합니다.
 
 ### 단일 소스 티어 스캔
 
@@ -88,7 +88,7 @@ claude "/loop full research sweep 시작해줘 everyday"
 
 ## 채점 방식
 
-각 아티클은 5개 항목에 대해 1-5점으로 평가됩니다:
+각 아티클은 5개 항목에 대해 1-5점으로 평가됩니다 (가중치와 임계값은 `sweep.py`에 정의):
 
 | 항목 | 가중치 | 평가 기준 |
 |------|--------|----------|
@@ -101,45 +101,52 @@ claude "/loop full research sweep 시작해줘 everyday"
 **가중 평균** = (R x 1.5 + Q x 1.0 + N x 1.5 + A x 1.0 + S x 1.0) / 6.0
 
 - FAIL (< 3.5): 필터링됨
-- PASS (>= 3.5): 다이제스트에 포함
+- PASS (>= 3.5): 목록에 포함
 - MUST READ (>= 4.5): 최상단 섹션으로 승격
 
 대부분의 콘텐츠는 3.5 미만으로 떨어집니다. 의도된 설계입니다. 시간 쓸 가치가 있는 것만 보여줍니다.
 
 ## 소스 레지스트리
 
-80개 이상의 소스를 8개 티어로 구성했습니다:
+94개의 소스를 8개 티어로 구성했습니다:
 
 | 티어 | 소스 수 | 예시 |
 |------|---------|------|
 | 1. AI 연구소 | 8 | Anthropic, OpenAI, DeepMind, Meta AI, Mistral |
-| 2. AI 툴링 | 8 | Cursor, Vercel, GitHub, LangChain, Hugging Face |
+| 2. AI 툴링 | 8 | Cursor, Windsurf/Codeium, Vercel, GitHub, LangChain, Hugging Face |
 | 3. 엔지니어링 블로그 | 15 | Netflix, Stripe, Cloudflare, Shopify, AWS |
 | 3b. MLOps | 14 | Weights & Biases, Databricks, Modal, Arize AI |
-| 4. 커뮤니티 | 11 | Hacker News, Reddit, GitHub Trending, 뉴스레터 |
-| 5. 논문 | 5 | arXiv, Hugging Face Papers, Papers With Code |
+| 4. 커뮤니티 | 15 | Hacker News, Reddit (5개 서브), dev.to, Lobsters, GitHub Trending, 뉴스레터 |
+| 5. 논문 | 6 | arXiv (cs.AI, cs.CL, cs.SE), Hugging Face Papers, Papers With Code |
 | 6. 개인 블로그 | 14 | Simon Willison, Andrej Karpathy, Chip Huyen |
 | 7. 영상 및 오디오 | 10 | Lex Fridman, Latent Space, Fireship, Yannic Kilcher |
 | 8. 시장 동향 | 4 | a16z, TechCrunch AI, CB Insights |
 
-소스를 추가하거나 제거하려면 `research-sweep-prompt.md`를 편집하면 됩니다. 이 파일이 유일한 소스 레지스트리이고, 스킬들이 런타임에 읽어갑니다.
+이 중 60개 소스는 RSS/Atom 피드를 지원하고 (`feed_parser.py`로 수집), 나머지 34개는 WebSearch를 사용합니다.
+
+소스를 추가하거나 제거하려면 `research-sweep-prompt.md`(소스 레지스트리)와 `feeds.json`(피드 URL)을 함께 편집하면 됩니다. 스킬들이 런타임에 두 파일 모두 읽어갑니다.
 
 ## 프로젝트 구조
 
 ```
 intel/
   sweep.py                    # 결정론적 파이프라인 (채점 계산, 중복 제거, 포맷팅, 파일 I/O)
+  feed_parser.py              # RSS/Atom 피드 수집기 (stdlib 전용, 외부 의존성 없음)
+  feeds.json                  # 94개 소스의 피드 URL 레지스트리
+  input.py                    # 대화형 설정 (타임프레임, 최대 아티클 수, 타임아웃)
   research-sweep-prompt.md    # 소스 레지스트리 + 채점 기준 + 규칙
   setup.sh                    # 환경 설정 및 검증
   digests/                    # 마크다운 다이제스트 출력 디렉토리
   .claude/
+    lang.conf                 # 언어 설정 (en 또는 ko)
     skills/
-      research-sweep/         # 전체 스윕 오케스트레이터
+      research-sweep/         # 전체 스윕 오케스트레이터 (15개 병렬 스캐너)
       scan-sources/           # 단일 티어 스캐너
       score-article/          # 개별 아티클 채점기
       research-digest/        # 다이제스트 포맷터
       install/                # 셋업 및 검증
       humanizer/              # AI 작문 패턴 제거
+      korean-translator/      # 영어 → 한국어 기술 번역
       playwright-skill/       # JS 렌더링이 필요한 사이트용 브라우저 자동화
 ```
 
@@ -147,7 +154,7 @@ intel/
 
 `sweep.py`와 LLM 에이전트의 역할 분리는 의도적입니다. Python은 결정론적 작업(채점 계산, 중복 제거, 포맷팅, 파일 I/O)을 담당하고, LLM 에이전트는 판단이 필요한 작업(소스 검색, 1-5점 채점, 요약 작성)을 담당합니다. 이렇게 하면 채점 공식이 실행마다 흔들리지 않습니다.
 
-5개 스캐너 에이전트는 병렬로 실행됩니다. 가치가 높은 티어(AI 연구소, 논문)는 정확도를 위해 Sonnet을 사용하고, 상대적으로 가치가 낮은 티어(커뮤니티, 시장 동향)는 속도를 위해 Haiku를 사용합니다.
+15개 스캐너 에이전트는 두 차례의 웨이브로 병렬 실행됩니다. 판단력이 중요한 5개 스캐너(AI 연구소 선두 그룹, 툴링 IDE, 논문, 개인 LLM 블로거, 미디어/마켓)는 정확도를 위해 Sonnet을 사용하고, 나머지 10개는 속도를 위해 Haiku를 사용합니다.
 
 모든 URL은 특정 아티클을 가리켜야 하고, 블로그 인덱스나 홈페이지 URL은 버립니다. LLM이 블로그 인덱스 페이지를 그럴싸하게 지어내서 링크하는 문제가 잦기 때문입니다.
 

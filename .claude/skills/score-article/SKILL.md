@@ -27,15 +27,16 @@ note that and score based on available metadata only.
 
 ### Step 2: Analyze and score
 
-Apply this rubric (each criterion scored 1-5):
+Read the scoring rubric from `research-sweep-prompt.md` (Scoring Rubric section).
+Apply each criterion scored 1-5. Quick reference:
 
-| Criterion        | Weight | 1 (Low) | 3 (Medium) | 5 (High) |
-|------------------|--------|---------|------------|----------|
-| **Relevance**    | 1.5x   | Tangential to SWE/AI | Somewhat related | Directly applicable to AI-native SWE work |
-| **Quality**      | 1.0x   | Opinion, no data | Some evidence | Data-backed, peer-reviewed, or from authoritative source |
-| **Novelty**      | 1.5x   | Common knowledge rehash | Incremental update | Genuinely new technique, finding, or paradigm |
-| **Actionability**| 1.0x   | Pure theory/speculation | Could inform decisions | Can apply this week with clear steps |
-| **Signal/Noise** | 1.0x   | Mostly filler/marketing | Mixed | Dense, every paragraph adds value |
+| Criterion        | Weight | 1 (Low) | 5 (High) |
+|------------------|--------|---------|----------|
+| **Relevance**    | 1.5x   | Tangential to SWE/AI | Directly applicable to AI-native SWE work |
+| **Quality**      | 1.0x   | Opinion, no data | Data-backed, authoritative source |
+| **Novelty**      | 1.5x   | Common knowledge rehash | Genuinely new technique or finding |
+| **Actionability**| 1.0x   | Pure theory/speculation | Can apply this week with clear steps |
+| **Signal/Noise** | 1.0x   | Mostly filler/marketing | Dense, every paragraph adds value |
 
 ### Step 3: Calculate weighted score
 

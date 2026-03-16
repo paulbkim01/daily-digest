@@ -41,7 +41,17 @@ The user specifies a tier: `ai-labs`, `tooling`, `eng-blogs`, `mlops`,
 | `market`      | Tier 8: Financial & Market Intel              |
 | `all`         | All tiers, sequentially                       |
 
-3. Search for content from the last 12 months from those sources.
+3. Check `/tmp/sweep-config.json` for the `timeframe` value. If missing, default to `7 days`.
+
+4. **Feed-first discovery (MANDATORY):** Before using WebSearch, fetch RSS/Atom feeds:
+   ```bash
+   python3 feed_parser.py fetch --tier {TIER_ID} --since {timeframe}
+   ```
+   Use feed results as the PRIMARY article list. Only use WebSearch for sources where
+   `feed_url` is null in `feeds.json` or the feed returned 0 items. Merge feed + WebSearch
+   results together.
+
+5. Search for content within that timeframe from those sources.
 
 ## Output
 
@@ -52,15 +62,11 @@ For each item found, output:
   Summary: [1 sentence]
 ```
 
-**URL RULES (MANDATORY — items that violate these are DISCARDED):**
-- Every URL MUST point to the specific article, paper, or video — not a blog index, homepage, or section page.
-- If you cannot find the direct URL, use WebFetch to visit the source and locate the correct link.
-- If WebFetch fails (JS-heavy pages, dynamic content), use the Playwright skill to navigate and extract links.
-  Run: `cd .claude/skills/playwright-skill && node run.js /tmp/scrape-*.js`
-- If you still cannot find it, OMIT the item entirely rather than using a generic URL.
+**URL RULES:** See `research-sweep-prompt.md` Rules section. Every URL must point to the
+specific article page. No index pages, homepages, or section pages. Use WebFetch or Playwright
+to find correct links. Omit items where you can't find the direct URL.
 
-**WRITING RULES (MANDATORY):**
-- Summaries must sound human-written. No AI vocabulary ("delve", "landscape", "paradigm", etc.).
-- Write like a sharp analyst, not a press release. Be direct and specific.
+**WRITING RULES:** Apply humanizer rules (`.claude/skills/humanizer/SKILL.md`).
+No AI vocabulary. Write direct and specific, like an analyst.
 
-Sort by date (newest first). Skip anything older than 12 months.
+Sort by date (newest first). Skip anything outside the configured timeframe.

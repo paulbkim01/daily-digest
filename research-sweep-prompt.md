@@ -1,9 +1,9 @@
 # Research Sweep Prompt
 
 > **Note:** This file is the **single source of truth** for the source registry, scoring
-> rubric, and rules. The `.claude/commands/` files (`research-sweep.md`, `scan-sources.md`)
+> rubric, and rules. The `.claude/skills/` files (`research-sweep/SKILL.md`, `scan-sources/SKILL.md`)
 > read this file at runtime to get source lists — they do not maintain their own copies.
-> To add or remove sources, edit ONLY this file's Source Registry section.
+> To add or remove sources, edit this file's Source Registry section and update `feeds.json`.
 
 You are a research analyst curating high-signal technical content for a senior software engineer
 who builds with AI/agents daily. Sweep the sources below and return only items passing the
@@ -82,7 +82,7 @@ scoring threshold. Use WebSearch and WebFetch to access these sources.
 - arXiv cs.AI, cs.CL, cs.SE (arxiv.org/list/cs.AI/recent)
 - Semantic Scholar trending (semanticscholar.org/research-feeds)
 - Papers With Code (paperswithcode.com) — SOTA benchmarks
-- Google Scholar alerts for: "LLM agents", "code generation", "AI software engineering"
+- Google Scholar alerts for: "LLM agents", "code generation", "AI software engineering" (manual check only — no programmatic access)
 
 ### Tier 6: Notable Individuals
 - Simon Willison (simonwillison.net) — LLM tooling, prompt engineering
@@ -133,31 +133,11 @@ Threshold: ≥ 3.5 to include. Flag ≥ 4.5 as **MUST READ**.
 
 ## Output Format
 
-Group results into these categories (omit empty categories):
-- MUST READ (score >= 4.5) — always first
-- AI Labs & Models
-- Developer Tools & IDEs
-- Engineering & Infrastructure
-- Research Papers
-- MLOps & ML Systems
-- Agents & Frameworks
-- Video & Audio
-- Market & Funding
+Digest formatting (category grouping, stats footer, file naming) is handled deterministically
+by `sweep.py format` and `sweep.py pipeline`. Categories in order are defined in `sweep.py`
+CATEGORIES list. Do not manually format the digest structure — pipe scored JSON through sweep.py.
 
-For each passing item:
-
-### [MUST READ] or [Category] Title
-- **Source:** URL | Author/Channel
-- **Published:** date | **Format:** article / paper / video / podcast
-- **Score:** R:X Q:X N:X A:X S:X → **Weighted: X.X**
-- **TL;DR:** 2-3 sentences on why this matters
-- **Key Takeaway:** One concrete, actionable insight
-
-## End-of-Sweep Summary
-
-```
-Items scanned: X | Passed threshold: Y | Must-reads: Z
-```
+The LLM is responsible for writing these prose sections:
 
 ### State of the World (3-5 sentences)
 Synthesize the most important signals across all domains into a cohesive narrative.
@@ -167,7 +147,7 @@ What shifted? What's emerging? What should the reader pay attention to this week
 Ranked list of things the reader should look at, try, or build based on today's sweep.
 
 ## Rules
-- **URL RULE (MANDATORY — items that violate this are DISCARDED):** Every URL MUST point to the specific article, paper, or video page. Never use a blog index, homepage, section page, or archive page. If you cannot find the direct URL, use WebFetch to visit the source site and locate the correct link. If you still cannot find it, OMIT the item entirely. Examples:
+- **URL RULE (MANDATORY — items that violate this are DISCARDED):** Every URL MUST point to the specific article, paper, or video page. Never use a blog index, homepage, section page, or archive page. If you cannot find the direct URL, use WebFetch to visit the source site and locate the correct link. If WebFetch fails (JS-heavy pages), use the Playwright skill to navigate and extract links. If you still cannot find it, OMIT the item entirely. Examples:
   - WRONG: `https://blog.cloudflare.com/`, `https://arxiv.org/`, `https://cursor.com/blog`, `https://www.anthropic.com/news`
   - RIGHT: `https://blog.cloudflare.com/slashing-agent-token-costs`, `https://arxiv.org/abs/2501.12948`, `https://cursor.com/blog/agent-automations`, `https://www.anthropic.com/news/claude-opus-4-6`
 - Skip paywalled content you cannot access

@@ -58,9 +58,8 @@ cd .claude/skills/playwright-skill && npm run setup
 ```
 
 **If Humanizer skill is missing:**
-```bash
-cd .claude/skills && git clone https://github.com/blader/humanizer.git
-```
+The humanizer skill is included in this repository at `.claude/skills/humanizer/`.
+If it's missing, the repository may be incomplete. Re-clone the repo.
 
 Re-run `bash setup.sh` after fixes to confirm everything passes.
 
